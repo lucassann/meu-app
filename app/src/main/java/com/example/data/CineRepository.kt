@@ -17,8 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+// KTX imports removed
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
@@ -47,7 +46,7 @@ class CineRepository(private val context: Context) {
 
     // Instância do Firebase Firestore
     private val firestore: FirebaseFirestore by lazy {
-        Firebase.firestore
+        FirebaseFirestore.getInstance()
     }
 
     // Flow that emits changes to the VIP premium state
