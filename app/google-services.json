@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "949049110824",
+    "project_id": "cinepremiumap",
+    "storage_bucket": "cinepremiumap.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:949049110824:android:4c5781cfe6fb78166da01d",
+        "android_client_info": {
+          "package_name": "com.aistudio.cinepremium.qpzkst"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzzVP1wMQESGBpLrKuqWxYVodPmtn8t88"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
