@@ -46,6 +46,13 @@ class CineRepository(private val context: Context) {
 
     // Instância do Firebase Firestore
     private val firestore: FirebaseFirestore by lazy {
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(context).isEmpty()) {
+                com.google.firebase.FirebaseApp.initializeApp(context)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         FirebaseFirestore.getInstance()
     }
 

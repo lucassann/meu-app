@@ -17,15 +17,13 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     
-    if (FirebaseApp.getApps(this).isEmpty()) {
-        val options = FirebaseOptions.Builder()
-            .setProjectId("cinepremiumap")
-            .setApplicationId("1:949049110824:android:4c5781cfe6fb78166da01d")
-            .setApiKey("AIzaSyAzzVP1wMQESGBpLrKuqWxYVodPmtn8t88")
-            .build()
-        FirebaseApp.initializeApp(this, options)
+    try {
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            FirebaseApp.initializeApp(this)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
-
     setContent {
       MyApplicationTheme {
         HomeScreen(modifier = Modifier.fillMaxSize())
