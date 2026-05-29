@@ -250,11 +250,12 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
                 
-                // Lista de APIs que funcionam via Iframe nativamente com TMDB (Focadas em PT-BR)
+                // Lista de APIs que funcionam via Iframe nativamente com TMDB
                 val fallbackApis = listOf(
-                    "https://embed.warezcdn.link/filme/$targetId",
-                    "https://embed.su/embed/movie/$targetId",
-                    "https://multiembed.mov/direct?video_id=$targetId&tmdb=1"
+                    "https://superflixapi.top/filme/$targetId", // Foco em PT-BR
+                    "https://vidsrc.me/embed/movie?tmdb=$targetId", // Alternativa global muito estável
+                    "https://embed.smashystream.com/playere.php?tmdb=$targetId",
+                    "https://embed.warezcdn.link/filme/$targetId"
                 )
                 
                 // Abre o player instantaneamente no Iframe
