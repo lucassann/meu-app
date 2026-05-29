@@ -250,8 +250,8 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
                 
-                // Tenta o Vidsrc (rápido e limpo)
-                val primaryApiUrl = "https://vidsrc.me/embed/movie?tmdb=$targetId"
+                // Tenta o myembed (Brasil, limpo e eficiente)
+                val primaryApiUrl = "https://myembed.biz/filme/$targetId"
                 
                 // tenta pegar m3u8 direto se permitir extração
                 val extractedStream = repository.scrapeM3u8Url(primaryApiUrl)
@@ -263,6 +263,7 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 
                 // Lista de APIs que funcionam via Iframe nativamente com TMDB
                 val fallbackApis = listOf(
+                    "https://myembed.biz/filme/$targetId",
                     "https://vidsrc.me/embed/movie?tmdb=$targetId",
                     "https://vidsrc.to/embed/movie/$targetId",
                     "https://embed.su/embed/movie/$targetId"
