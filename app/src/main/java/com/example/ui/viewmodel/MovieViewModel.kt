@@ -247,28 +247,30 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                      return@launch
                 }
 
-                // Senão, usa o agregador padrao
+                // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
-                val cleanBaseUrl = _aggregatorUrl.value.trimEnd('/')
-                val targetUrl = "$cleanBaseUrl/embed/movie?tmdb=$targetId"
                 
-                // tenta pegar m3u8 direto do agregador
-                val extractedStream = repository.scrapeM3u8Url(targetUrl)
+                // Tenta o SuperflixAPI (muito rápido e limpo)
+                val primaryApiUrl = "https://superflixapi.top/filme/$targetId"
+                
+                // tenta pegar m3u8 direto se o superflix permitir extração
+                val extractedStream = repository.scrapeM3u8Url(primaryApiUrl)
                 _scrapeState.value = ScrapeUiState.Success(extractedStream)
                 
             } catch (e: Exception) {
-                // Fallback para o targetUrl original do agregador no webview
-                val cleanBaseUrl = _aggregatorUrl.value.trimEnd('/')
+                // Fallback automático para o Iframe no WebView
                 val targetId = movie.id.toString()
-                val targetUrl = "$cleanBaseUrl/embed/movie?tmdb=$targetId"
+                val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
                 
-                if (cleanBaseUrl.isNotEmpty()) {
-                    _scrapeState.value = ScrapeUiState.Success(targetUrl)
-                } else if (movie.videoUrl.isNotEmpty()) {
-                    _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
-                } else {
-                    _scrapeState.value = ScrapeUiState.Error("Servidor indisponível ou link quebrado. Tente outra fonte.")
-                }
+                // Lista de APIs que funcionam via Iframe nativamente com TMDB
+                val fallbackApis = listOf(
+                    "https://superflixapi.top/filme/$targetId",
+                    "https://embed.warezcdn.link/filme/$targetId",
+                    "https://vidsrc.to/embed/movie/$targetId"
+                )
+                
+                // O WebView tocará o Iframe do SuperflixAPI automaticamente sem precisar que o usuario cole link
+                _scrapeState.value = ScrapeUiState.Success(fallbackApis.first())
             }
         }
     }
