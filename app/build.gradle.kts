@@ -100,7 +100,7 @@ dependencies {
   // implementation(libs.firebase.ai)
   implementation(libs.firebase.firestore)
   implementation(libs.firebase.messaging)
-  implementation(libs.firebase.auth)
+  implementation("com.google.firebase:firebase-auth")
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)
