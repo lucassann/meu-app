@@ -269,6 +269,28 @@ class CineRepository(private val context: Context) {
         }
     }
 
+    suspend fun extractIframeFromPortal(pageUrl: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val doc = org.jsoup.Jsoup.connect(pageUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                .timeout(10000)
+                .get()
+            
+            // Procura por iframes no conteúdo principal
+            val iframes = doc.select("iframe")
+            for (iframe in iframes) {
+                val src = iframe.attr("src")
+                if (src.contains("viewplayer") || src.contains("embed") || src.contains("player")) {
+                    return@withContext src
+                }
+            }
+            return@withContext null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     /**
      * Scrapes a third-party server website to extract an .m3u8 video URL.
      * Substitui o Jsoup por um WebView Headless rodando na Main Thread para processar JavaScript e Cloudflare RUM.

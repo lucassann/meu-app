@@ -231,20 +231,41 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
         _activePlayingMovie.value = movie
         viewModelScope.launch {
             try {
-                // Perform live scraping for .m3u8 sources
+                // Se a URL manual for um portal (megacine, etc), tenta extrair o iframe dele primeiro!
+                val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
+                if (!isDummyVideo && movie.videoUrl.isNotEmpty() && !movie.videoUrl.contains(".m3u8")) {
+                    val extractedIframe = repository.extractIframeFromPortal(movie.videoUrl)
+                    if (extractedIframe != null) {
+                        _scrapeState.value = ScrapeUiState.Success(extractedIframe)
+                        return@launch
+                    }
+                }
+                
+                // Se for um link direto manual (.m3u8 ou mp4), toca direto
+                if (!isDummyVideo && movie.videoUrl.contains(".m3u8")) {
+                     _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
+                     return@launch
+                }
+
+                // Senão, usa o agregador padrao
                 val targetId = movie.id.toString()
                 val cleanBaseUrl = _aggregatorUrl.value.trimEnd('/')
                 val targetUrl = "$cleanBaseUrl/embed/movie?tmdb=$targetId"
+                
+                // tenta pegar m3u8 direto do agregador
                 val extractedStream = repository.scrapeM3u8Url(targetUrl)
                 _scrapeState.value = ScrapeUiState.Success(extractedStream)
+                
             } catch (e: Exception) {
-                // Se a raspagem falhar, usa a URL manual do admin se existir. Senão exibe erro.
-                val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
-                if (!isDummyVideo && movie.videoUrl.isNotEmpty()) {
-                    _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
-                } else if (cleanBaseUrl.isNotEmpty()) {
-                    // Fallback to directly load the iframe URL in the WebView
+                // Fallback para o targetUrl original do agregador no webview
+                val cleanBaseUrl = _aggregatorUrl.value.trimEnd('/')
+                val targetId = movie.id.toString()
+                val targetUrl = "$cleanBaseUrl/embed/movie?tmdb=$targetId"
+                
+                if (cleanBaseUrl.isNotEmpty()) {
                     _scrapeState.value = ScrapeUiState.Success(targetUrl)
+                } else if (movie.videoUrl.isNotEmpty()) {
+                    _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
                 } else {
                     _scrapeState.value = ScrapeUiState.Error("Servidor indisponível ou link quebrado. Tente outra fonte.")
                 }
