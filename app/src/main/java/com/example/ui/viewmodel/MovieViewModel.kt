@@ -250,27 +250,18 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
                 
-                // Tenta o WarezCDN (Brasil)
-                val primaryApiUrl = "https://embed.warezcdn.link/filme/$targetId"
-                
-                // tenta pegar m3u8 direto se permitir extração
-                val extractedStream = repository.scrapeM3u8Url(primaryApiUrl)
-                _scrapeState.value = ScrapeUiState.Success(extractedStream)
-                
-            } catch (e: Exception) {
-                // Fallback automático para o Iframe no WebView
-                val targetId = movie.id.toString()
-                
                 // Lista de APIs que funcionam via Iframe nativamente com TMDB
                 val fallbackApis = listOf(
-                    "https://embed.warezcdn.link/filme/$targetId",
-                    "https://mflix.to/embed/movie/$targetId",
-                    "https://myembed.biz/filme/$targetId",
-                    "https://vidsrc.me/embed/movie?tmdb=$targetId"
+                    "https://vidsrc.to/embed/movie/$targetId",
+                    "https://vidsrcme.ru/embed/movie?tmdb=$targetId",
+                    "https://myembed.biz/filme/$targetId"
                 )
                 
-                // O WebView tocará o Iframe do WarezCDN ou Mflix automaticamente
+                // Abre o player instantaneamente no Iframe
                 _scrapeState.value = ScrapeUiState.Success(fallbackApis.first())
+                
+            } catch (e: Exception) {
+                _scrapeState.value = ScrapeUiState.Error("Erro ao carregar vídeo")
             }
         }
     }
