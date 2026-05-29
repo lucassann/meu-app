@@ -326,7 +326,7 @@ class CineRepository(private val context: Context) {
                                 
                                 // O app espiona todas as requisições, incluindo iframes do Cloudflare
                                 // Se a URL requisitada for um vídeo m3u8, nós roubamos a URL e retornamos pro player!
-                                if (url.contains(".m3u8") && !isResumed) {
+                                if (url.contains(".m3u8") && !isResumed && continuation.isActive) {
                                     isResumed = true
                                     continuation.resume(url)
                                 }

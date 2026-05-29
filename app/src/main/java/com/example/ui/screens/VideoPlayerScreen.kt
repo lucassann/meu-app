@@ -230,12 +230,13 @@ fun VideoPlayerScreen(
                                 view?.evaluateJavascript(
                                     """
                                     javascript:(function() {
+                                        window.open = function() { return null; }; // Bloqueia aberturas de janelas JS
                                         var block = setInterval(function() {
-                                            var els = document.querySelectorAll('div[style*="z-index"], iframe[src*="ad"]');
-                                            els.forEach(function(e) { 
-                                                if(e.style.zIndex > 1000) e.remove(); 
+                                            var iframes = document.querySelectorAll('iframe');
+                                            iframes.forEach(function(i) {
+                                                if(i.src.includes('ad') || i.src.includes('pop')) i.remove();
                                             });
-                                            var playBtn = document.querySelector('.play-button, .vjs-big-play-button');
+                                            var playBtn = document.querySelector('.play-button, .vjs-big-play-button, .jw-icon-display');
                                             if (playBtn) playBtn.click();
                                         }, 1000);
                                         setTimeout(function() { clearInterval(block); }, 10000);
