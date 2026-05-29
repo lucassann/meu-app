@@ -26,7 +26,11 @@ sealed interface ScrapeUiState {
     data object Idle : ScrapeUiState
     data object Loading : ScrapeUiState
     val isLoading: Boolean get() = this is Loading
-    data class Success(val streamUrl: String) : ScrapeUiState
+    data class Success(
+        val streamUrl: String,
+        val availableServers: List<String> = emptyList(),
+        val currentServerIndex: Int = 0
+    ) : ScrapeUiState
     data class Error(val errorMsg: String) : ScrapeUiState
 }
 
@@ -259,7 +263,11 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 )
                 
                 // Abre o player instantaneamente no Iframe
-                _scrapeState.value = ScrapeUiState.Success(fallbackApis.first())
+                _scrapeState.value = ScrapeUiState.Success(
+                    streamUrl = fallbackApis.first(),
+                    availableServers = fallbackApis,
+                    currentServerIndex = 0
+                )
                 
             } catch (e: Exception) {
                 _scrapeState.value = ScrapeUiState.Error("Erro ao carregar vídeo")
@@ -269,7 +277,19 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
 
     fun startDirectPlayback(fallbackUrl: String, movie: Movie) {
         _activePlayingMovie.value = movie
-        _scrapeState.value = ScrapeUiState.Success(fallbackUrl)
+        _scrapeState.value = ScrapeUiState.Success(fallbackUrl, listOf(fallbackUrl), 0)
+    }
+
+    fun nextServer() {
+        val currentState = _scrapeState.value
+        if (currentState is ScrapeUiState.Success && currentState.availableServers.size > 1) {
+            val nextIndex = (currentState.currentServerIndex + 1) % currentState.availableServers.size
+            _scrapeState.value = ScrapeUiState.Loading // Força o recarregamento
+            _scrapeState.value = currentState.copy(
+                streamUrl = currentState.availableServers[nextIndex],
+                currentServerIndex = nextIndex
+            )
+        }
     }
 
     fun startWhatsAppSubscriptionIntent(context: Context) {

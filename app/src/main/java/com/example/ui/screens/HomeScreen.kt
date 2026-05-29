@@ -699,10 +699,11 @@ fun HomeScreen(
 
     // --- FULL-SCREEN PLAYER SCREEN OVERLAY PLAYBACK ENHANCEMENT ---
     if (activePlayingMovie != null && scrapeUiState is ScrapeUiState.Success) {
-        val streamUrl = (scrapeUiState as ScrapeUiState.Success).streamUrl
+        val successState = scrapeUiState as ScrapeUiState.Success
         VideoPlayerScreen(
-            videoUrl = streamUrl,
+            videoUrl = successState.streamUrl,
             onCloseClick = { viewModel.setActiveMovie(null) },
+            onSwitchServer = if (successState.availableServers.size > 1) { { viewModel.nextServer() } } else null,
             modifier = Modifier.fillMaxSize()
         )
     }

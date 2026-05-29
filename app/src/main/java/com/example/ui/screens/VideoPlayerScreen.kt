@@ -49,6 +49,7 @@ import com.example.ui.theme.CineRed
 fun VideoPlayerScreen(
     videoUrl: String,
     onCloseClick: () -> Unit,
+    onSwitchServer: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -377,6 +378,18 @@ fun VideoPlayerScreen(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text("Controles Bloqueados 🔒", color = CineGold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                if (!isScreenLocked && onSwitchServer != null) {
+                    androidx.compose.material3.TextButton(
+                        onClick = onSwitchServer,
+                        modifier = Modifier
+                            .height(44.dp)
+                            .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(22.dp))
+                            .padding(horizontal = 12.dp)
+                    ) {
+                        Text("Trocar Servidor", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
