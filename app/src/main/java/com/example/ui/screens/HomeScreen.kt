@@ -825,28 +825,15 @@ fun HomeScreen(
                         }
 
                         if (!isUserVip) {
-                            Button(
+                            IconButton(
                                 onClick = { showLoginAuth = true },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = CineGold.copy(alpha = 0.2f),
-                                    contentColor = CineGold
-                                ),
-                                shape = RoundedCornerShape(30.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                                border = BorderStroke(1.dp, CineGold),
-                                modifier = Modifier.height(34.dp)
+                                modifier = Modifier.size(34.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Person,
+                                    imageVector = Icons.Filled.Lock,
                                     contentDescription = "Login Premium",
-                                    modifier = Modifier.size(14.dp),
-                                    tint = CineGold
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Acesso Premium",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
+                                    modifier = Modifier.size(16.dp),
+                                    tint = CineTextGray.copy(alpha = 0.5f)
                                 )
                             }
                         } else {

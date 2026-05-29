@@ -9,10 +9,13 @@ import androidx.compose.ui.Modifier
 import com.example.ui.screens.HomeScreen
 import com.example.ui.theme.MyApplicationTheme
 
+import com.google.firebase.FirebaseApp
+
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
+    FirebaseApp.initializeApp(this)
     setContent {
       MyApplicationTheme {
         HomeScreen(modifier = Modifier.fillMaxSize())
