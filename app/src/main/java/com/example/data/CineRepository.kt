@@ -67,6 +67,8 @@ class CineRepository(private val context: Context) {
                     val title = doc.getString("title") ?: ""
                     val year = doc.getString("year") ?: ""
                     val category = doc.getString("category") ?: ""
+                    val type = doc.getString("type") ?: "Filme"
+                    val section = doc.getString("section") ?: "Lançamentos"
                     val rating = doc.getString("rating") ?: ""
                     val isVIP = doc.getBoolean("isVIP") ?: false
                     val duration = doc.getString("duration") ?: ""
@@ -77,7 +79,8 @@ class CineRepository(private val context: Context) {
                     val pageUrlToScrape = doc.getString("pageUrlToScrape") ?: ""
                     
                     com.example.ui.screens.Movie(
-                        id = id, title = title, year = year, category = category, rating = rating,
+                        id = id, title = title, year = year, category = category,
+                        type = type, section = section, rating = rating,
                         isVIP = isVIP, duration = duration, description = description,
                         accentTone = androidx.compose.ui.graphics.Color(0xFFE50914), // CineRed fallback
                         posterUrl = posterUrl, bannerUrl = bannerUrl, videoUrl = videoUrl,
@@ -93,11 +96,16 @@ class CineRepository(private val context: Context) {
     suspend fun addCustomMovie(movie: com.example.ui.screens.Movie) {
         val map = mapOf(
             "id" to movie.id, "title" to movie.title, "year" to movie.year, "category" to movie.category,
+            "type" to movie.type, "section" to movie.section,
             "rating" to movie.rating, "isVIP" to movie.isVIP, "duration" to movie.duration,
             "description" to movie.description, "posterUrl" to movie.posterUrl, "bannerUrl" to movie.bannerUrl,
             "videoUrl" to movie.videoUrl, "pageUrlToScrape" to movie.pageUrlToScrape
         )
         firestore.collection("movies").document(movie.id.toString()).set(map).await()
+    }
+
+    suspend fun deleteCustomMovie(movieId: Int) {
+        firestore.collection("movies").document(movieId.toString()).delete().await()
     }
 
     // Unique user profile id (cached in DataStore)

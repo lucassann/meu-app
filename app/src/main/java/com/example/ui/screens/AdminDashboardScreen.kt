@@ -157,11 +157,18 @@ fun AdminUsersTab(viewModel: MovieViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminContentTab(viewModel: MovieViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     val searchResults by viewModel.tmdbSearchResults.collectAsState()
-    
+    val customMovies by viewModel.customMovies.collectAsState()
+    var movieToConfigure by remember { mutableStateOf<com.example.ui.screens.Movie?>(null) }
+    var selectedType by remember { mutableStateOf("Filme") }
+    var selectedGenre by remember { mutableStateOf("Ação") }
+    var selectedSection by remember { mutableStateOf("Lançamentos") }
+    var isVip by remember { mutableStateOf(false) }
+
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Buscar no TMDB e Adicionar ao App", color = CineTextWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         
@@ -182,8 +189,36 @@ fun AdminContentTab(viewModel: MovieViewModel) {
             Text("Buscar no TMDB")
         }
         
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(searchResults) { movie ->
+        if (searchResults.isNotEmpty()) {
+            Text("Resultados da Busca:", color = CineTextWhite, fontSize = 14.sp)
+            LazyColumn(modifier = Modifier.height(180.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(searchResults) { movie ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().background(CineDarkGray, RoundedCornerShape(8.dp)).padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(movie.title, color = CineTextWhite, fontWeight = FontWeight.Bold)
+                            Text(movie.year, color = CineTextGray, fontSize = 12.sp)
+                        }
+                        Button(
+                            onClick = { movieToConfigure = movie },
+                            colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier.height(30.dp)
+                        ) {
+                            Text("Configurar", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        Text("Conteúdos Ativos no App (${customMovies.size})", color = CineTextWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxHeight()) {
+            items(customMovies) { movie ->
                 Row(
                     modifier = Modifier.fillMaxWidth().background(CineDarkGray, RoundedCornerShape(8.dp)).padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -191,17 +226,93 @@ fun AdminContentTab(viewModel: MovieViewModel) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(movie.title, color = CineTextWhite, fontWeight = FontWeight.Bold)
-                        Text(movie.year, color = CineTextGray, fontSize = 12.sp)
+                        Text("${movie.type} • ${movie.section} • ${movie.category}", color = CineTextGray, fontSize = 12.sp)
                     }
+                    IconButton(onClick = { viewModel.deleteMovieFromCustomCatalog(movie.id) }) {
+                        Icon(Icons.Default.Close, contentDescription = "Remover", tint = CineRed)
+                    }
+                }
+            }
+        }
+    }
+
+    if (movieToConfigure != null) {
+        Dialog(onDismissRequest = { movieToConfigure = null }) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CineDarkGray),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Configurar: ${movieToConfigure?.title}", color = CineGold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    
+                    Text("Tipo", color = CineTextWhite, fontSize = 12.sp)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(listOf("Filme", "Série", "Anime", "Desenho")) { type ->
+                            FilterChip(
+                                selected = selectedType == type,
+                                onClick = { selectedType = type },
+                                label = { Text(type, color = CineTextWhite) },
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = CineGold, selectedLabelColor = Color.Black)
+                            )
+                        }
+                    }
+
+                    Text("Gênero (Subcategoria)", color = CineTextWhite, fontSize = 12.sp)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(listOf("Ação", "Comédia", "Terror", "Drama", "Ficção", "Aventura", "Romance", "Suspense")) { genre ->
+                            FilterChip(
+                                selected = selectedGenre == genre,
+                                onClick = { selectedGenre = genre },
+                                label = { Text(genre, color = CineTextWhite) },
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = CineGold, selectedLabelColor = Color.Black)
+                            )
+                        }
+                    }
+
+                    Text("Seção da Tela Inicial", color = CineTextWhite, fontSize = 12.sp)
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(listOf("Lançamentos", "Top 10", "Mais Assistidos", "Populares", "Em Alta")) { sec ->
+                            FilterChip(
+                                selected = selectedSection == sec,
+                                onClick = { selectedSection = sec },
+                                label = { Text(sec, color = CineTextWhite) },
+                                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = CineGold, selectedLabelColor = Color.Black)
+                            )
+                        }
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Exclusivo VIP?", color = CineTextWhite)
+                        Switch(checked = isVip, onCheckedChange = { isVip = it }, colors = SwitchDefaults.colors(checkedThumbColor = CineGold))
+                    }
+                    
+                    var manualVideoUrl by remember { mutableStateOf("") }
+                    OutlinedTextField(
+                        value = manualVideoUrl,
+                        onValueChange = { manualVideoUrl = it },
+                        label = { Text("URL do Vídeo M3U8/MP4 (Opcional)", color = CineTextGray) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
                     Button(
-                        onClick = { 
-                            viewModel.addMovieToCustomCatalog(movie) 
+                        onClick = {
+                            val finalMovie = movieToConfigure!!.copy(
+                                type = selectedType,
+                                category = selectedGenre,
+                                section = selectedSection,
+                                isVIP = isVip,
+                                videoUrl = if (manualVideoUrl.isNotBlank()) manualVideoUrl else movieToConfigure!!.videoUrl
+                            )
+                            viewModel.addMovieToCustomCatalog(finalMovie)
+                            movieToConfigure = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                        modifier = Modifier.height(30.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Adicionar", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text("Salvar no Aplicativo")
                     }
                 }
             }

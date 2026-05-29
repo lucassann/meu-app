@@ -176,6 +176,12 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
         }
     }
 
+    fun deleteMovieFromCustomCatalog(movieId: Int) {
+        viewModelScope.launch {
+            repository.deleteCustomMovie(movieId)
+        }
+    }
+
     fun setVipStatus(isVip: Boolean) {
         viewModelScope.launch {
             repository.setVipStatus(isVip)
@@ -232,11 +238,12 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 val extractedStream = repository.scrapeM3u8Url(targetUrl)
                 _scrapeState.value = ScrapeUiState.Success(extractedStream)
             } catch (e: Exception) {
-                // If the scrape fails, we check if pageUrlToScrape / videoUrl contains custom fallback to ensure beautiful video review is always ready
-                if (movie.pageUrlToScrape.contains(".m3u8") || movie.videoUrl.contains(".m3u8")) {
-                    _scrapeState.value = ScrapeUiState.Success(if (movie.videoUrl.contains(".m3u8")) movie.videoUrl else movie.pageUrlToScrape)
+                // Se a raspagem falhar, usa a URL manual do admin se existir. Senão exibe erro.
+                val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
+                if (!isDummyVideo && (movie.videoUrl.contains(".m3u8") || movie.videoUrl.contains(".mp4"))) {
+                    _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
                 } else {
-                    _scrapeState.value = ScrapeUiState.Error("Servidor indisponível no momento. Tente outra fonte.")
+                    _scrapeState.value = ScrapeUiState.Error("Servidor indiponível ou link quebrado. Tente outra fonte.")
                 }
             }
         }

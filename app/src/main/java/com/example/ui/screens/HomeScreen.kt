@@ -61,6 +61,8 @@ data class Movie(
     val title: String,
     val year: String,
     val category: String,
+    val type: String = "Filme",
+    val section: String = "Lançamentos",
     val rating: String,
     val isVIP: Boolean,
     val resolution: String = "4K Ultra HD",
@@ -340,21 +342,31 @@ fun HomeScreen(
                                     CircularProgressIndicator(color = CineGold)
                                 }
                             } else {
-                                MovieCarousel(
-                                    title = "Adicionados Recentemente (CMS)",
-                                    movies = customMovies,
-                                    onMovieSelect = { selectedMovieForDetails = it }
-                                )
+                                val sections = listOf("Lançamentos", "Top 10", "Mais Assistidos", "Populares", "Em Alta")
+                                var hasAnyCustomMovie = false
 
-                                Spacer(modifier = Modifier.height(24.dp))
+                                sections.forEach { section ->
+                                    val sectionMovies = customMovies.filter { it.section == section }
+                                    if (sectionMovies.isNotEmpty()) {
+                                        hasAnyCustomMovie = true
+                                        MovieCarousel(
+                                            title = section,
+                                            movies = sectionMovies,
+                                            onMovieSelect = { selectedMovieForDetails = it }
+                                        )
+                                        Spacer(modifier = Modifier.height(24.dp))
+                                    }
+                                }
 
-                                MovieCarousel(
-                                    title = "Lançamentos e Populares",
-                                    movies = popularMovies,
-                                    onMovieSelect = { selectedMovieForDetails = it }
-                                )
-
-                                Spacer(modifier = Modifier.height(18.dp))
+                                // Fallbacks in case the CMS is completely empty
+                                if (!hasAnyCustomMovie) {
+                                    MovieCarousel(
+                                        title = "Populares (TMDB)",
+                                        movies = popularMovies,
+                                        onMovieSelect = { selectedMovieForDetails = it }
+                                    )
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                }
 
                                 // Dynamic AdMob banner simulation for nonvip users
                                 if (!isUserVip) {
@@ -362,19 +374,13 @@ fun HomeScreen(
                                     Spacer(modifier = Modifier.height(18.dp))
                                 }
 
-                                MovieCarousel(
-                                    title = "Tendências da Semana (TMDB)",
-                                    movies = trendingMovies.ifEmpty { MovieMockData.recomendados },
-                                    onMovieSelect = { selectedMovieForDetails = it }
-                                )
-
-                                Spacer(modifier = Modifier.height(18.dp))
-
-                                MovieCarousel(
-                                    title = "Melhores Avaliados (TMDB)",
-                                    movies = topRatedMovies.ifEmpty { MovieMockData.lancamentos.reversed() },
-                                    onMovieSelect = { selectedMovieForDetails = it }
-                                )
+                                if (!hasAnyCustomMovie) {
+                                    MovieCarousel(
+                                        title = "Tendências da Semana (TMDB)",
+                                        movies = trendingMovies.ifEmpty { MovieMockData.recomendados },
+                                        onMovieSelect = { selectedMovieForDetails = it }
+                                    )
+                                }
                             }
                             
                             Spacer(modifier = Modifier.height(32.dp))
@@ -990,16 +996,10 @@ fun HomeScreen(
                         modifier = Modifier.size(44.dp)
                     )
                     Text(
-                        text = "Raspando link do servidor seguro...",
+                        text = "Carregando Filme...",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = CineTextWhite,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "O Jsoup está escaneando a página carregada em background buscando por endereços HLS .m3u8 válidos.",
-                        fontSize = 12.sp,
-                        color = CineTextGray,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -1381,7 +1381,7 @@ fun HeroSection(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Buscando Fonte...",
+                                text = "Carregando...",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
@@ -1403,33 +1403,6 @@ fun HeroSection(
                     }
                 }
 
-                // Minha Lista Button (Secondary translucent modern circular button)
-                Button(
-                    onClick = { 
-                        isSavedToList = !isSavedToList 
-                        onMyListClick()
-                    },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .testTag("hero_list_button"),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White.copy(alpha = 0.2f),
-                        contentColor = Color.White
-                    ),
-                    shape = CircleShape,
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (isSavedToList) Icons.Filled.Check else Icons.Filled.Add,
-                            contentDescription = "Minha Lista",
-                            modifier = Modifier.size(24.dp),
-                            tint = if (isSavedToList) CineGold else Color.White
-                        )
-                    }
                 }
             }
         }
