@@ -207,7 +207,43 @@ fun VideoPlayerScreen(
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         settings.mediaPlaybackRequiresUserGesture = false
-                        webViewClient = android.webkit.WebViewClient()
+                        settings.setSupportMultipleWindows(false) // BLOCK POPUPS NATURALLY
+                        settings.javaScriptCanOpenWindowsAutomatically = false
+                        
+                        webViewClient = object : android.webkit.WebViewClient() {
+                            val adBlockList = listOf("exoclick", "popads", "popunder", "adsystem", "doubleclick", "syndication", "onclick")
+                            
+                            override fun shouldInterceptRequest(
+                                view: android.webkit.WebView?,
+                                request: android.webkit.WebResourceRequest?
+                            ): android.webkit.WebResourceResponse? {
+                                val url = request?.url?.toString()?.lowercase() ?: ""
+                                if (adBlockList.any { url.contains(it) }) {
+                                    return android.webkit.WebResourceResponse("text/plain", "UTF-8", null)
+                                }
+                                return super.shouldInterceptRequest(view, request)
+                            }
+
+                            override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
+                                super.onPageFinished(view, url)
+                                // INJECT JS TO REMOVE INVISIBLE OVERLAYS AND ADS
+                                view?.evaluateJavascript(
+                                    """
+                                    javascript:(function() {
+                                        var block = setInterval(function() {
+                                            var els = document.querySelectorAll('div[style*="z-index"], iframe[src*="ad"]');
+                                            els.forEach(function(e) { 
+                                                if(e.style.zIndex > 1000) e.remove(); 
+                                            });
+                                            var playBtn = document.querySelector('.play-button, .vjs-big-play-button');
+                                            if (playBtn) playBtn.click();
+                                        }, 1000);
+                                        setTimeout(function() { clearInterval(block); }, 10000);
+                                    })();
+                                    """.trimIndent(), null
+                                )
+                            }
+                        }
                         webChromeClient = android.webkit.WebChromeClient()
                         layoutParams = FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,

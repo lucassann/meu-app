@@ -300,7 +300,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(20.dp))
 
                         // Category Pills
-                        val categories = listOf("Todos", "Ação", "Sci-Fi", "Suspense", "Terror", "Épicos")
+                        val categories = listOf("Todos") + customMovies.map { it.category }.filter { it.isNotBlank() }.distinct().sorted()
                         var selectedCategory by remember { mutableStateOf("Todos") }
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -322,9 +322,8 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Filter mock list based on searches
-                        val allMovies = MovieMockData.lancamentos + MovieMockData.recomendados + listOf(MovieMockData.heroMovie)
-                        val filteredMovies = allMovies.filter {
+                        // Filter active CMS movies based on searches
+                        val filteredMovies = customMovies.filter {
                             (searchQuery.isEmpty() || it.title.contains(searchQuery, ignoreCase = true) || it.category.contains(searchQuery, ignoreCase = true)) &&
                             (selectedCategory == "Todos" || it.category.contains(selectedCategory, ignoreCase = true))
                         }.distinctBy { it.id }

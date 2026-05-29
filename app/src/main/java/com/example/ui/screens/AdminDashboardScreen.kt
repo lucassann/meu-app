@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -263,8 +264,19 @@ fun AdminContentTab(viewModel: MovieViewModel) {
                         Text(movie.title, color = CineTextWhite, fontWeight = FontWeight.Bold)
                         Text("${movie.type} • ${movie.section} • ${movie.category}", color = CineTextGray, fontSize = 12.sp)
                     }
-                    IconButton(onClick = { viewModel.deleteMovieFromCustomCatalog(movie.id) }) {
-                        Icon(Icons.Default.Close, contentDescription = "Remover", tint = CineRed)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        IconButton(onClick = { 
+                            selectedType = movie.type
+                            selectedGenre = movie.category
+                            selectedSection = movie.section
+                            isVip = movie.isVIP
+                            movieToConfigure = movie 
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = CineGold)
+                        }
+                        IconButton(onClick = { viewModel.deleteMovieFromCustomCatalog(movie.id) }) {
+                            Icon(Icons.Default.Close, contentDescription = "Remover", tint = CineRed)
+                        }
                     }
                 }
             }
