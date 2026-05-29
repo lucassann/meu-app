@@ -252,6 +252,7 @@ fun HomeScreen(
     val vipUsersList by viewModel.vipUsersList.collectAsState()
     val aggregatorUrl by viewModel.aggregatorUrl.collectAsState()
     val tmdbApiKey by viewModel.tmdbApiKey.collectAsState()
+    val customMovies by viewModel.customMovies.collectAsState()
 
     var showAdminPanel by remember { mutableStateOf(false) }
     var showPasscodeDialog by remember { mutableStateOf(false) }
@@ -269,6 +270,7 @@ fun HomeScreen(
     // Local dialogs controls
     var selectedMovieForDetails by remember { mutableStateOf<Movie?>(null) }
     var showPaywallDialog by remember { mutableStateOf(false) }
+    var showLoginAuth by remember { mutableStateOf(false) }
     var movieDeferredToPlay by remember { mutableStateOf<Movie?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -339,8 +341,16 @@ fun HomeScreen(
                                 }
                             } else {
                                 MovieCarousel(
-                                    title = "Lançamentos Populares (TMDB)",
-                                    movies = popularMovies.ifEmpty { MovieMockData.lancamentos },
+                                    title = "Adicionados Recentemente (CMS)",
+                                    movies = customMovies,
+                                    onMovieSelect = { selectedMovieForDetails = it }
+                                )
+
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                MovieCarousel(
+                                    title = "Lançamentos e Populares",
+                                    movies = popularMovies,
                                     onMovieSelect = { selectedMovieForDetails = it }
                                 )
 
@@ -798,33 +808,50 @@ fun HomeScreen(
                             )
                         }
 
-                        // Interactive state toggle representing simulated actions
-                        Button(
-                            onClick = { isLoading = !isLoading },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isLoading) CineRed else CineDarkGray.copy(alpha = 0.85f),
-                                contentColor = CineTextWhite
-                            ),
-                            shape = RoundedCornerShape(30.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                            border = BorderStroke(1.dp, if (isLoading) Color.Transparent else CineTextGray.copy(alpha = 0.3f)),
-                            modifier = Modifier
-                                .height(34.dp)
-                                .testTag("shimmer_toggle")
-                        ) {
-                            Icon(
-                                imageVector = if (isLoading) Icons.Filled.Refresh else Icons.Filled.PlayArrow,
-                                contentDescription = "Simulate State",
-                                modifier = Modifier.size(14.dp),
-                                tint = if (isLoading) CineTextWhite else CineGold
+                        if (showLoginAuth) {
+                            LoginAuthScreen(
+                                onDismiss = { showLoginAuth = false },
+                                onLoginSuccess = { uid ->
+                                    showLoginAuth = false
+                                    viewModel.setVipStatus(true)
+                                }
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = if (isLoading) "Ver Conteúdo" else "Ver Shimmer",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = CineTextWhite
-                            )
+                        }
+
+                        if (!isUserVip) {
+                            Button(
+                                onClick = { showLoginAuth = true },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = CineGold.copy(alpha = 0.2f),
+                                    contentColor = CineGold
+                                ),
+                                shape = RoundedCornerShape(30.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                border = BorderStroke(1.dp, CineGold),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "Login Premium",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = CineGold
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Acesso Premium",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(30.dp))
+                                    .background(CineGold)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Premium Ativo", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                            }
                         }
                     }
                 }
@@ -1126,6 +1153,8 @@ fun HomeScreen(
                         label = { Text("Senha PIN", color = CineTextGray) },
                         singleLine = true,
                         isError = isError,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
                             unfocusedTextColor = Color.White,
@@ -1160,280 +1189,11 @@ fun HomeScreen(
             }
         )
     }
-
-    // --- PAINEL ADMINISTRATIVO SECRETO AVANÇADO ---
     if (showAdminPanel) {
-        var localAggregatorUrl by remember { mutableStateOf(aggregatorUrl) }
-        var localTmdbKey by remember { mutableStateOf(tmdbApiKey) }
-        var showPushDialog by remember { mutableStateOf(false) }
-
-        // Edit User Dialog State
-        var userToEdit by remember { mutableStateOf<com.example.data.local.VipUserEntity?>(null) }
-
-        AlertDialog(
-            onDismissRequest = { showAdminPanel = false },
-            containerColor = CineDarkGray,
-            modifier = Modifier.fillMaxWidth(0.98f),
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(CineGold),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("⚙", color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text("Admin Real-Time", color = CineTextWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
-            },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    // SEÇÃO 1: FONTES E NOTIFICAÇÕES
-                    Text("FONTES & NOTIFICAÇÕES", color = CineGold, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    
-                    Button(
-                        onClick = { showPushDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = CineRed, contentColor = Color.White),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("📢 Enviar Notificação Push Global", fontWeight = FontWeight.Bold)
-                    }
-
-                    OutlinedTextField(
-                        value = localAggregatorUrl,
-                        onValueChange = { localAggregatorUrl = it },
-                        label = { Text("URL Agregador (Scraping)", color = CineTextGray) },
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = CineGold, unfocusedBorderColor = CineLightGray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    OutlinedTextField(
-                        value = localTmdbKey,
-                        onValueChange = { localTmdbKey = it },
-                        label = { Text("Chave API TMDB", color = CineTextGray) },
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = CineGold, unfocusedBorderColor = CineLightGray
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Button(
-                        onClick = {
-                            viewModel.updateConfigs(localAggregatorUrl, localTmdbKey)
-                            android.widget.Toast.makeText(context, "Configurações atualizadas!", android.widget.Toast.LENGTH_SHORT).show()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Salvar Fontes", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(CineLightGray))
-                    
-                    // SEÇÃO 2: CONTROLE DE USUÁRIOS
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("GERENCIAR USUÁRIOS (${vipUsersList.size})", color = CineGold, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                        OutlinedButton(
-                            onClick = {
-                                val testId = "CINE-${(1000..9999).random()}"
-                                viewModel.registerVipRequested(testId, "Novo Usuário $testId")
-                            },
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = CineGold),
-                            border = BorderStroke(1.dp, CineGold),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text("+ Criar Usuário", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    // Lista de Usuários Dinâmica
-                    vipUsersList.forEach { vipRecord ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (vipRecord.isBanned) CineRed.copy(0.2f) else Color.Black.copy(0.3f))
-                                .border(1.dp, if (vipRecord.isBanned) CineRed else CineLightGray.copy(0.2f), RoundedCornerShape(8.dp))
-                                .padding(12.dp)
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = vipRecord.name,
-                                        color = CineTextWhite,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "ID: ${vipRecord.id}",
-                                        color = CineTextGray,
-                                        fontSize = 10.sp,
-                                        fontFamily = FontFamily.Monospace
-                                    )
-                                    if (vipRecord.isBanned) {
-                                        Text("🚫 BANIDO", color = CineRed, fontSize = 10.sp, fontWeight = FontWeight.Black)
-                                    } else if (vipRecord.expirationTime > 0L) {
-                                        Text("⏳ Expira em breve", color = CineGold, fontSize = 10.sp)
-                                    } else {
-                                        Text("⭐ Vitalício", color = Color(0xFF25D366), fontSize = 10.sp)
-                                    }
-                                }
-                                
-                                // Toggle VIP rápido
-                                Switch(
-                                    checked = vipRecord.isVip && !vipRecord.isBanned,
-                                    onCheckedChange = { isChecked ->
-                                        viewModel.updateVipUser(vipRecord.copy(isVip = isChecked, isBanned = false))
-                                    },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = CineGold,
-                                        checkedTrackColor = CineGold.copy(0.4f)
-                                    )
-                                )
-                            }
-                            
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Button(
-                                    onClick = { userToEdit = vipRecord },
-                                    colors = ButtonDefaults.buttonColors(containerColor = CineDarkGray, contentColor = CineTextWhite),
-                                    modifier = Modifier.weight(1f).height(32.dp),
-                                    contentPadding = PaddingValues(0.dp)
-                                ) {
-                                    Text("Editar / Banir", fontSize = 10.sp)
-                                }
-                                Button(
-                                    onClick = { viewModel.deleteVipUser(vipRecord.id) },
-                                    colors = ButtonDefaults.buttonColors(containerColor = CineRed.copy(0.8f), contentColor = Color.White),
-                                    modifier = Modifier.weight(1f).height(32.dp),
-                                    contentPadding = PaddingValues(0.dp)
-                                ) {
-                                    Text("Apagar", fontSize = 10.sp)
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = { showAdminPanel = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black)
-                ) {
-                    Text("Fechar Painel", fontWeight = FontWeight.Bold)
-                }
-            }
+        AdminDashboardScreen(
+            viewModel = viewModel,
+            onDismiss = { showAdminPanel = false }
         )
-
-        // DIÁLOGO DE EDIÇÃO DE USUÁRIO (Banimento e Tempo)
-        if (userToEdit != null) {
-            val user = userToEdit!!
-            var editName by remember { mutableStateOf(user.name) }
-            var isBanned by remember { mutableStateOf(user.isBanned) }
-            
-            AlertDialog(
-                onDismissRequest = { userToEdit = null },
-                containerColor = CineDarkGray,
-                title = { Text("Editar: ${user.id}", color = CineTextWhite, fontSize = 16.sp) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
-                            value = editName,
-                            onValueChange = { editName = it },
-                            label = { Text("Nome do Usuário", color = CineTextGray) },
-                            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = isBanned,
-                                onCheckedChange = { isBanned = it },
-                                colors = CheckboxDefaults.colors(checkedColor = CineRed)
-                            )
-                            Text("Banir Dispositivo (Bloqueia acesso total)", color = CineRed, fontSize = 12.sp)
-                        }
-                        Text("Funcionalidade de Expiração de Tempo (Em breve via API)", color = CineTextGray, fontSize = 10.sp)
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            viewModel.updateVipUser(user.copy(name = editName, isBanned = isBanned))
-                            userToEdit = null
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black)
-                    ) {
-                        Text("Salvar")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { userToEdit = null }) { Text("Cancelar", color = CineTextGray) }
-                }
-            )
-        }
-
-        // DIÁLOGO DE NOTIFICAÇÃO PUSH
-        if (showPushDialog) {
-            var pushTitle by remember { mutableStateOf("") }
-            var pushMessage by remember { mutableStateOf("") }
-            AlertDialog(
-                onDismissRequest = { showPushDialog = false },
-                containerColor = CineDarkGray,
-                title = { Text("Enviar Notificação Push", color = CineTextWhite) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("A notificação será enviada para todos os aparelhos ativos usando Firebase Cloud Messaging.", color = CineTextGray, fontSize = 12.sp)
-                        OutlinedTextField(
-                            value = pushTitle, onValueChange = { pushTitle = it },
-                            label = { Text("Título") }, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
-                        )
-                        OutlinedTextField(
-                            value = pushMessage, onValueChange = { pushMessage = it },
-                            label = { Text("Mensagem") }, colors = OutlinedTextFieldDefaults.colors(focusedTextColor = Color.White, unfocusedTextColor = Color.White)
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            android.widget.Toast.makeText(context, "Notificação agendada para envio! (Requer Firebase ativo)", android.widget.Toast.LENGTH_LONG).show()
-                            showPushDialog = false
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = CineRed, contentColor = Color.White)
-                    ) { Text("Disparar") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showPushDialog = false }) { Text("Cancelar", color = CineTextGray) }
-                }
-            )
-        }
     }
 }
 

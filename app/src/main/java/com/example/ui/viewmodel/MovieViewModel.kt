@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.CineRepository
-import com.example.data.LinkExtractor
+import com.example.data.CineRepository
 import com.example.data.tmdb.TmdbClient
 import com.example.data.tmdb.TmdbMovie
 import com.example.ui.screens.Movie
@@ -32,7 +32,7 @@ sealed interface ScrapeUiState {
 
 class MovieViewModel(private val repository: CineRepository) : ViewModel() {
 
-    private val linkExtractor = LinkExtractor()
+// Removed linkExtractor
 
     // Real-time custom settings & client status caches
     val isUserVip: StateFlow<Boolean> = repository.isUserVipFlow
@@ -64,6 +64,12 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
     private val _topRatedMovies = MutableStateFlow<List<Movie>>(emptyList())
     val topRatedMovies: StateFlow<List<Movie>> = _topRatedMovies.asStateFlow()
 
+    val customMovies: StateFlow<List<Movie>> = repository.customMoviesFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _tmdbSearchResults = MutableStateFlow<List<Movie>>(emptyList())
+    val tmdbSearchResults: StateFlow<List<Movie>> = _tmdbSearchResults.asStateFlow()
+
     private val _isCatalogLoading = MutableStateFlow(false)
     val isCatalogLoading: StateFlow<Boolean> = _isCatalogLoading.asStateFlow()
 
@@ -78,6 +84,13 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
         viewModelScope.launch {
             val uid = repository.getOrInitializeUserId()
             _userProfileId.value = uid
+            
+            // Sync auth state
+            val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            if (currentUser != null) {
+                _userProfileId.value = currentUser.uid
+                repository.setVipStatus(true) // Assume logged in means premium, or check Firestore
+            }
             
             // Sync with local Room table VIP list
             repository.syncLocalVipStatusFromDatabase()
@@ -144,6 +157,25 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
         }
     }
 
+    fun searchTmdbMovies(query: String) {
+        viewModelScope.launch {
+            try {
+                val key = _tmdbApiKey.value.trim()
+                if (key.isEmpty() || query.isBlank()) return@launch
+                val response = TmdbClient.service.searchMovies(key, query)
+                _tmdbSearchResults.value = response.results.map { it.toDomainMovie() }
+            } catch (e: Exception) {
+                Log.e("CinePremium", "Erro ao buscar filmes no TMDB", e)
+            }
+        }
+    }
+
+    fun addMovieToCustomCatalog(movie: Movie) {
+        viewModelScope.launch {
+            repository.addCustomMovie(movie)
+        }
+    }
+
     fun setVipStatus(isVip: Boolean) {
         viewModelScope.launch {
             repository.setVipStatus(isVip)
@@ -194,11 +226,10 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 // Perform live scraping for .m3u8 sources
-                val targetId = movie.id.toString() // String representation for the extractor
-                val extractedStream = linkExtractor.extractM3u8Stream(
-                    tmdbId = targetId,
-                    aggregatorBaseUrl = _aggregatorUrl.value
-                )
+                val targetId = movie.id.toString()
+                val cleanBaseUrl = _aggregatorUrl.value.trimEnd('/')
+                val targetUrl = "$cleanBaseUrl/embed/movie?tmdb=$targetId"
+                val extractedStream = repository.scrapeM3u8Url(targetUrl)
                 _scrapeState.value = ScrapeUiState.Success(extractedStream)
             } catch (e: Exception) {
                 // If the scrape fails, we check if pageUrlToScrape / videoUrl contains custom fallback to ensure beautiful video review is always ready

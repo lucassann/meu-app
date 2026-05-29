@@ -40,7 +40,7 @@ class CineRepository(private val context: Context) {
         
         const val CONFIG_KEY_AGGREGATOR_URL = "aggregator_base_url"
         const val CONFIG_KEY_TMDB_API_KEY = "tmdb_api_key"
-        const val DEFAULT_AGGREGATOR_URL = "https://embed.warezcdn.com"
+        const val DEFAULT_AGGREGATOR_URL = "https://megacine.boats"
         const val DEFAULT_TMDB_API_KEY = "c746904c8c640ee387f3d28f3d451c0e"
     }
 
@@ -50,17 +50,55 @@ class CineRepository(private val context: Context) {
     }
 
     // Flow that emits changes to the VIP premium state
-    val isUserVipFlow: Flow<Boolean> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
+    val isUserVipFlow: Flow<Boolean> = callbackFlow {
+        val subscription = firestore.collection("vip_users").document(getOrInitializeUserId())
+            .addSnapshotListener { snapshot, _ ->
+                val isVip = snapshot?.getBoolean("isVip") ?: false
+                trySend(isVip)
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    val customMoviesFlow: Flow<List<com.example.ui.screens.Movie>> = callbackFlow {
+        val subscription = firestore.collection("movies").addSnapshotListener { snapshot, _ ->
+            if (snapshot != null) {
+                val list = snapshot.documents.mapNotNull { doc ->
+                    val id = doc.getLong("id")?.toInt() ?: 0
+                    val title = doc.getString("title") ?: ""
+                    val year = doc.getString("year") ?: ""
+                    val category = doc.getString("category") ?: ""
+                    val rating = doc.getString("rating") ?: ""
+                    val isVIP = doc.getBoolean("isVIP") ?: false
+                    val duration = doc.getString("duration") ?: ""
+                    val description = doc.getString("description") ?: ""
+                    val posterUrl = doc.getString("posterUrl") ?: ""
+                    val bannerUrl = doc.getString("bannerUrl") ?: ""
+                    val videoUrl = doc.getString("videoUrl") ?: ""
+                    val pageUrlToScrape = doc.getString("pageUrlToScrape") ?: ""
+                    
+                    com.example.ui.screens.Movie(
+                        id = id, title = title, year = year, category = category, rating = rating,
+                        isVIP = isVIP, duration = duration, description = description,
+                        accentTone = androidx.compose.ui.graphics.Color(0xFFE50914), // CineRed fallback
+                        posterUrl = posterUrl, bannerUrl = bannerUrl, videoUrl = videoUrl,
+                        pageUrlToScrape = pageUrlToScrape
+                    )
+                }
+                trySend(list)
             }
         }
-        .map { preferences ->
-            preferences[IS_VIP_KEY] ?: false // Default to false (Not VIP)
-        }
+        awaitClose { subscription.remove() }
+    }
+
+    suspend fun addCustomMovie(movie: com.example.ui.screens.Movie) {
+        val map = mapOf(
+            "id" to movie.id, "title" to movie.title, "year" to movie.year, "category" to movie.category,
+            "rating" to movie.rating, "isVIP" to movie.isVIP, "duration" to movie.duration,
+            "description" to movie.description, "posterUrl" to movie.posterUrl, "bannerUrl" to movie.bannerUrl,
+            "videoUrl" to movie.videoUrl, "pageUrlToScrape" to movie.pageUrlToScrape
+        )
+        firestore.collection("movies").document(movie.id.toString()).set(map).await()
+    }
 
     // Unique user profile id (cached in DataStore)
     val userProfileIdFlow: Flow<String> = context.dataStore.data
