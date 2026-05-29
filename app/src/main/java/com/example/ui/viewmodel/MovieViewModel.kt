@@ -311,9 +311,9 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
             id = (id % Int.MAX_VALUE).toInt(), // Safely convert Long id to Int for domains
             title = title,
             year = yearString,
-            category = "TMDB Premium",
+            category = "TMDB Movies",
             rating = String.format("%.1f", voteAverage),
-            isVIP = true, // TMDB movies are premium accessible
+            isVIP = false,
             resolution = "4K Ultra HD",
             duration = "2h",
             description = overview ?: "Nenhuma sinopse disponível.",
