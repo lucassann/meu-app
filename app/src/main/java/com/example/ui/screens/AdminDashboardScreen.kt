@@ -126,37 +126,72 @@ fun AdminUsersTab(viewModel: MovieViewModel) {
     
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            Text("Gerenciar Acessos Premium", color = CineTextWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Button(
-                onClick = { /* TODO Create Login */ },
-                colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black)
-            ) {
-                Text("Criar Login")
-            }
+            Text("Gerenciamento de Clientes", color = CineTextWhite, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
         
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(vipUsers) { user ->
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth().background(CineDarkGray, RoundedCornerShape(8.dp)).padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column {
-                        Text(user.name, color = CineTextWhite, fontWeight = FontWeight.Bold)
-                        Text(user.id, color = CineTextGray, fontSize = 12.sp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(user.name, color = CineTextWhite, fontWeight = FontWeight.Bold)
+                            Text(user.id, color = CineTextGray, fontSize = 11.sp)
+                            
+                            val statusText = if (user.isBanned) "🚫 BANIDO" 
+                                             else if (!user.isVip) "Inativo"
+                                             else if (user.expirationTime == 0L) "VIP Vitalício"
+                                             else "VIP até: " + java.text.SimpleDateFormat("dd/MM/yyyy").format(java.util.Date(user.expirationTime))
+                            Text(statusText, color = if (user.isBanned) CineRed else CineGold, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Switch(
+                            checked = user.isVip,
+                            onCheckedChange = { 
+                                val updatedUser = user.copy(isVip = it)
+                                viewModel.updateVipUser(updatedUser) 
+                            },
+                            colors = SwitchDefaults.colors(checkedThumbColor = CineGold, checkedTrackColor = CineGold.copy(0.4f))
+                        )
                     }
-                    Switch(
-                        checked = user.isVip,
-                        onCheckedChange = { viewModel.setCustomUserVipStatus(user.id, it) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = CineGold, checkedTrackColor = CineGold.copy(0.4f))
-                    )
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = { 
+                                val updatedUser = user.copy(isBanned = !user.isBanned, isVip = false)
+                                viewModel.updateVipUser(updatedUser) 
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = if (user.isBanned) CineLightGray else CineRed),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text(if (user.isBanned) "Desbanir" else "Banir Dispositivo", fontSize = 11.sp, color = Color.White)
+                        }
+                        
+                        Button(
+                            onClick = { 
+                                val newExp = if (user.expirationTime < System.currentTimeMillis()) System.currentTimeMillis() else user.expirationTime
+                                val updatedUser = user.copy(expirationTime = newExp + 30L * 24 * 60 * 60 * 1000, isVip = true, isBanned = false)
+                                viewModel.updateVipUser(updatedUser) 
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = CineGold),
+                            modifier = Modifier.height(36.dp)
+                        ) {
+                            Text("+30 Dias", fontSize = 11.sp, color = Color.Black)
+                        }
+                    }
                 }
             }
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminContentTab(viewModel: MovieViewModel) {

@@ -240,10 +240,13 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
             } catch (e: Exception) {
                 // Se a raspagem falhar, usa a URL manual do admin se existir. Senão exibe erro.
                 val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
-                if (!isDummyVideo && (movie.videoUrl.contains(".m3u8") || movie.videoUrl.contains(".mp4"))) {
+                if (!isDummyVideo && movie.videoUrl.isNotEmpty()) {
                     _scrapeState.value = ScrapeUiState.Success(movie.videoUrl)
+                } else if (cleanBaseUrl.isNotEmpty()) {
+                    // Fallback to directly load the iframe URL in the WebView
+                    _scrapeState.value = ScrapeUiState.Success(targetUrl)
                 } else {
-                    _scrapeState.value = ScrapeUiState.Error("Servidor indiponível ou link quebrado. Tente outra fonte.")
+                    _scrapeState.value = ScrapeUiState.Error("Servidor indisponível ou link quebrado. Tente outra fonte.")
                 }
             }
         }

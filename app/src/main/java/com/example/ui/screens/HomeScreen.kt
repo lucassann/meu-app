@@ -325,11 +325,12 @@ fun HomeScreen(
                             ShimmerSkeleton(onForceLoadClick = { isLoading = false })
                         } else {
                             // High altitude Hero banner
+                            val heroMovieItem = customMovies.firstOrNull() ?: popularMovies.firstOrNull() ?: MovieMockData.heroMovie
                             HeroSection(
-                                movie = MovieMockData.heroMovie,
-                                onPlayClick = { handlePlayRequest(MovieMockData.heroMovie) },
+                                movie = heroMovieItem,
+                                onPlayClick = { handlePlayRequest(heroMovieItem) },
                                 onMyListClick = { /* Saved to user favorites list */ },
-                                isLoading = (activePlayingMovie == MovieMockData.heroMovie && scrapeUiState is ScrapeUiState.Loading)
+                                isLoading = (activePlayingMovie == heroMovieItem && scrapeUiState is ScrapeUiState.Loading)
                             )
 
                             Spacer(modifier = Modifier.height(24.dp))
@@ -477,184 +478,6 @@ fun HomeScreen(
                                         modifier = Modifier.fillMaxHeight(0.85f).align(Alignment.CenterVertically)
                                     )
                                 }
-                            }
-                        }
-                    }
-                }
-                
-                "VIP" -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .statusBarsPadding()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 20.dp, vertical = 16.dp)
-                            .padding(bottom = 110.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
-                    ) {
-                        // Title Header
-                        Text(
-                            text = "Assinatura VIP",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = CineTextWhite,
-                            modifier = Modifier.align(Alignment.Start)
-                        )
-
-                        // Member current status indicator
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Brush.horizontalGradient(listOf(CineDarkGray, CineBlack)))
-                                .border(1.2.dp, if (isUserVip) CineGold else CineRed, RoundedCornerShape(16.dp))
-                                .padding(20.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column {
-                                    Text(
-                                        text = "SEU PLANO ATUAL",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = CineTextGray,
-                                        letterSpacing = 1.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = if (isUserVip) "VIP CinePremium ★" else "Acesso Grátis com Anúncios",
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = if (isUserVip) CineGold else CineTextWhite
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .size(42.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isUserVip) CineGold.copy(0.15f) else CineRed.copy(0.15f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = if (isUserVip) Icons.Filled.Star else Icons.Filled.Lock,
-                                        contentDescription = "Status",
-                                        tint = if (isUserVip) CineGold else CineRed,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        // Plan details card
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = CineDarkGray),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                Text(
-                                    text = "Benefícios Premium VIP",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = CineTextWhite
-                                )
-                                
-                                val benefits = listOf(
-                                    "Acesso ilimitado a todos os filmes em ultra resolução (4K & IMAX).",
-                                    "Sem anúncios publicitários irritantes interrompendo.",
-                                    "Transmissão HLS adaptiva de alta performance instantânea.",
-                                    "Suporte VIP dedicado via WhatsApp prioritário."
-                                )
-                                benefits.forEach { benefit ->
-                                    Row(
-                                        verticalAlignment = Alignment.Top,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                    ) {
-                                        Text("✔", color = CineGold, fontWeight = FontWeight.Black)
-                                        Text(text = benefit, color = CineTextGray, fontSize = 13.sp)
-                                    }
-                                }
-                            }
-                        }
-
-                        // WhatsApp Action Trigger as required by specifications
-                        Button(
-                            onClick = { viewModel.startWhatsAppSubscriptionIntent(context) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF25D366), // Standard Whatsapp color signature
-                                contentColor = Color.Black
-                            ),
-                            shape = RoundedCornerShape(24.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp)
-                                .testTag("whatsapp_subscribe_button")
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Call,
-                                    contentDescription = "WhatsApp Contact",
-                                    tint = Color.Black,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = "Falar com Atendente no WhatsApp",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-
-                        // Switch toggle for simple local manual configuration check
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = CineDarkGray.copy(alpha = 0.5f),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, CineLightGray, RoundedCornerShape(16.dp))
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 12.dp, horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Simular VIP Localmente",
-                                        color = CineTextWhite,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "Ative para testar todos os players imediatamente sem paywall",
-                                        color = CineTextGray,
-                                        fontSize = 11.sp,
-                                        lineHeight = 14.sp
-                                    )
-                                }
-                                Switch(
-                                    checked = isUserVip,
-                                    onCheckedChange = { viewModel.setVipStatus(it) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = CineGold,
-                                        checkedTrackColor = CineGold.copy(0.4f),
-                                        uncheckedThumbColor = CineTextGray,
-                                        uncheckedTrackColor = CineLightGray
-                                    ),
-                                    modifier = Modifier.testTag("vip_local_switch")
-                                )
                             }
                         }
                     }
@@ -1077,17 +900,6 @@ fun HomeScreen(
                         }
                     }
 
-                    // Simulated manual bypass button (allows full testing of ExoPlayer / stream parsing instantly)
-                    Button(
-                        onClick = {
-                            showPaywallDialog = false
-                            viewModel.setVipStatus(true)
-                            // Re-trigger play request since user simulated VIP now
-                            handlePlayRequest(movie)
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = CineGold, contentColor = Color.Black),
-                        modifier = Modifier
-                            .fillMaxWidth()
                             .height(48.dp)
                             .testTag("paywall_demo_button")
                     ) {
@@ -1790,15 +1602,6 @@ fun FloatingBottomNavigationBar(
                     unselectedIcon = Icons.Outlined.Search,
                     isSelected = selectedTab == "Explorar",
                     onClick = { onTabSelected("Explorar") }
-                )
-
-                BottomNavItem(
-                    label = "VIP",
-                    icon = Icons.Filled.Star,
-                    unselectedIcon = Icons.Outlined.Star,
-                    isSelected = selectedTab == "VIP",
-                    activeColor = CineGold,
-                    onClick = { onTabSelected("VIP") }
                 )
 
                 BottomNavItem(

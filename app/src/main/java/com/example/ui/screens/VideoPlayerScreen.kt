@@ -177,27 +177,48 @@ fun VideoPlayerScreen(
                 }
             }
     ) {
-        // Embed classical Android media View Frame
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = exoPlayer
-                    useController = !isScreenLocked // Lock/Unlock controllers
-                    setShowNextButton(false)
-                    setShowPreviousButton(false)
-                    setShowFastForwardButton(true)
-                    setShowRewindButton(true)
-                    layoutParams = FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                }
-            },
-            update = { playerView ->
-                playerView.useController = !isScreenLocked
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+        if (videoUrl.endsWith(".m3u8") || videoUrl.endsWith(".mp4")) {
+            // Native ExoPlayer for extracted media streams
+            AndroidView(
+                factory = { ctx ->
+                    PlayerView(ctx).apply {
+                        player = exoPlayer
+                        useController = !isScreenLocked // Lock/Unlock controllers
+                        setShowNextButton(false)
+                        setShowPreviousButton(false)
+                        setShowFastForwardButton(true)
+                        setShowRewindButton(true)
+                        layoutParams = FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                update = { playerView ->
+                    playerView.useController = !isScreenLocked
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Web Player Fallback for aggregator sites like megacine.boats
+            AndroidView(
+                factory = { ctx ->
+                    android.webkit.WebView(ctx).apply {
+                        settings.javaScriptEnabled = true
+                        settings.domStorageEnabled = true
+                        settings.mediaPlaybackRequiresUserGesture = false
+                        webViewClient = android.webkit.WebViewClient()
+                        webChromeClient = android.webkit.WebChromeClient()
+                        layoutParams = FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        loadUrl(videoUrl)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         // LOADING SYSTEM FEEDBACK BUFFERING
         if (isBufferLoading) {

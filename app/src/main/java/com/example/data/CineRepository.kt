@@ -227,7 +227,8 @@ class CineRepository(private val context: Context) {
         val myId = getOrInitializeUserId()
         if (user.id == myId) {
             context.dataStore.edit { prefs ->
-                prefs[IS_VIP_KEY] = user.isVip && !user.isBanned
+                val isExpired = user.expirationTime > 0L && user.expirationTime < System.currentTimeMillis()
+                prefs[IS_VIP_KEY] = user.isVip && !user.isBanned && !isExpired
             }
         }
     }
@@ -241,7 +242,8 @@ class CineRepository(private val context: Context) {
                 val user = doc.toObject(VipUserEntity::class.java)
                 if (user != null) {
                     context.dataStore.edit { prefs ->
-                        prefs[IS_VIP_KEY] = user.isVip && !user.isBanned
+                        val isExpired = user.expirationTime > 0L && user.expirationTime < System.currentTimeMillis()
+                        prefs[IS_VIP_KEY] = user.isVip && !user.isBanned && !isExpired
                     }
                 }
             }
