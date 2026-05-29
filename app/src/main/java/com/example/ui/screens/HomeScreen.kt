@@ -78,152 +78,23 @@ data class Movie(
 // ---- MOCK DATA ----
 object MovieMockData {
     val heroMovie = Movie(
-        id = 99,
-        title = "Crônicas Cósmicas: Interestelar 2026",
-        year = "2026",
-        category = "Ficção Científica",
-        rating = "9.9",
-        isVIP = true,
-        duration = "2h 42m",
-        description = "Em um universo em colapso, uma tripulação de elite tenta cruzar um buraco de minhoca recém-descoberto nas fronteiras de Saturno para salvar a consciência humana.",
-        accentTone = Color(0xFF1E88E5),
-        posterUrl = "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80",
-        bannerUrl = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
-        pageUrlToScrape = "https://archive.org/embed/nasa-cosmic-collection-v5", // Scrapable archive iframe containing media links
-        videoUrl = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
+        id = 0,
+        title = "",
+        year = "",
+        category = "",
+        rating = "",
+        isVIP = false,
+        duration = "",
+        description = "",
+        accentTone = Color.Black,
+        posterUrl = "",
+        bannerUrl = "",
+        pageUrlToScrape = "",
+        videoUrl = ""
     )
 
-    val lancamentos = listOf(
-        Movie(
-            id = 1,
-            title = "O Último Cyberpunk",
-            year = "2026",
-            category = "Ação",
-            rating = "9.5",
-            isVIP = false,
-            resolution = "4K UHD",
-            duration = "1h 58m",
-            description = "Neon, chuva artificial e conspirações governamentais em Neo-Atalaia.",
-            accentTone = Color(0xFF00E5FF),
-            posterUrl = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://player.vimeo.com/video/838183204", // Vimeo iframe holding sample assets
-            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        ),
-        Movie(
-            id = 2,
-            title = "Duna: Deserto Cósmico",
-            year = "2026",
-            category = "Épico / Sci-Fi",
-            rating = "9.7",
-            isVIP = true,
-            resolution = "IMAX 4K",
-            duration = "2h 35m",
-            description = "A batalha final pela energia cósmica concentrada nas areias áridas.",
-            accentTone = Color(0xFFFFB300),
-            posterUrl = "https://images.unsplash.com/photo-1547234935-80c7145ec969?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://player.vimeo.com/video/57663412",
-            videoUrl = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        ),
-        Movie(
-            id = 3,
-            title = "Refúgio Silencioso",
-            year = "2025",
-            category = "Suspense",
-            rating = "8.9",
-            isVIP = false,
-            resolution = "HDR10",
-            duration = "1h 44m",
-            description = "O silêncio absoluto é a única garantia de sobrevivência na floresta isolada.",
-            accentTone = Color(0xFF8D6E63),
-            posterUrl = "https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://cinepremium-stream-source.io/iframe-player/shae17",
-            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-        ),
-        Movie(
-            id = 4,
-            title = "A Ascensão do Castelo",
-            year = "2026",
-            category = "Fantasia",
-            rating = "9.6",
-            isVIP = true,
-            resolution = "4K UHD",
-            duration = "2h 10m",
-            description = "Feitiços perdidos e batalhas medievais ganham vida em alta resolução.",
-            accentTone = Color(0xFF7E57C2),
-            posterUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://player.vimeo.com/video/57663412",
-            videoUrl = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        )
-    )
-
-    val recomendados = listOf(
-        Movie(
-            id = 5,
-            title = "Câmera Escura",
-            year = "2025",
-            category = "Terror Psicológico",
-            rating = "9.1",
-            isVIP = false,
-            resolution = "HDR",
-            duration = "1h 37m",
-            description = "Uma câmera antiga revela os segredos obscuros enterrados no porão.",
-            accentTone = Color(0xFFD32F2F),
-            posterUrl = "https://images.unsplash.com/photo-1485594050903-8e8ee7b071a8?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1485594050903-8e8ee7b071a8?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://cinepremium-stream-source.io/iframe-player/terror2",
-            videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-        ),
-        Movie(
-            id = 6,
-            title = "Cinquenta Graus Norte",
-            year = "2025",
-            category = "Aventura / Drama",
-            rating = "9.2",
-            isVIP = false,
-            resolution = "4K UHD",
-            duration = "2h 05m",
-            description = "Uma jornada gelada de sobrevivência pelos picos mais hostis do Alasca.",
-            accentTone = Color(0xFF26A69A),
-            posterUrl = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://player.vimeo.com/video/57663412",
-            videoUrl = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        ),
-        Movie(
-            id = 7,
-            title = "O Homem de Ferro de Tóquio",
-            year = "2026",
-            category = "Animação / Ação",
-            rating = "9.8",
-            isVIP = true,
-            resolution = "Dolby Vision",
-            duration = "1h 52m",
-            description = "O herói mecanizado de Tóquio levanta-se contra as corporações sombrias.",
-            accentTone = Color(0xFFEC407A),
-            posterUrl = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80",
-            pageUrlToScrape = "https://cinepremium-stream-source.io/iframe-player/mecha8",
-            videoUrl = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        ),
-        Movie(
-            id = 8,
-            title = "Rivalidade na Pista",
-            year = "2025",
-            category = "Documentário",
-            rating = "8.8",
-            isVIP = false,
-            resolution = "Full HD",
-            duration = "1h 30m",
-            description = "Por trás dos bastidores rápidos da temporada mais acirrada do automobilismo.",
-            accentTone = Color(0xFF82B1FF),
-            posterUrl = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&auto=format&fit=crop&q=80",
-            bannerUrl = "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=1200&auto=format&fit=crop&q=80"
-        )
-    )
+    val lancamentos = emptyList<Movie>()
+    val recomendados = emptyList<Movie>()
 }
 
 // ---- MAIN SCREEN COMPOSABLE ----
@@ -478,99 +349,6 @@ fun HomeScreen(
                                         modifier = Modifier.fillMaxHeight(0.85f).align(Alignment.CenterVertically)
                                     )
                                 }
-                            }
-                        }
-                    }
-                }
-                
-                "Perfil" -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .statusBarsPadding()
-                            .padding(horizontal = 24.dp, vertical = 20.dp)
-                            .padding(bottom = 110.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(18.dp)
-                    ) {
-                        Text(
-                            text = "Meu Perfil",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = CineTextWhite,
-                            modifier = Modifier.align(Alignment.Start)
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Avatar
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(CineDarkGray)
-                                .border(2.dp, CineRed, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "User Avatar",
-                                tint = CineTextWhite,
-                                modifier = Modifier.size(54.dp)
-                            )
-                        }
-
-                        Text(
-                            text = "Premium User",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = CineTextWhite
-                        )
-                        
-                        Text(
-                            text = "Email: vip-tester@cinepremium.com",
-                            fontSize = 13.sp,
-                            color = CineTextGray
-                        )
-
-                        // Unique Session Code
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(CineLightGray)
-                                .padding(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            val randomIdForShow = remember { (1000..9999).random() }
-                            Text(
-                                text = "ID do Cliente: #CINE-$randomIdForShow",
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace,
-                                color = CineGold,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // General Mock options list representation
-                        val settingsOptions = listOf(
-                            Pair(Icons.Default.Settings, "Configurações da Conta"),
-                            Pair(Icons.Default.Notifications, "Preferências de Notificação"),
-                            Pair(Icons.Default.Info, "Sobre o App & Licenças")
-                        )
-                        settingsOptions.forEach { opt ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(CineDarkGray)
-                                    .clickable { /* Perform Mock Action */ }
-                                    .padding(vertical = 12.dp, horizontal = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(imageVector = opt.first, contentDescription = opt.second, tint = CineTextGray, modifier = Modifier.size(18.dp))
-                                Text(text = opt.second, color = CineTextWhite, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             }
                         }
                     }
@@ -1603,13 +1381,6 @@ fun FloatingBottomNavigationBar(
                     isSelected = selectedTab == "Explorar",
                     onClick = { onTabSelected("Explorar") }
                 )
-
-                BottomNavItem(
-                    label = "Perfil",
-                    icon = Icons.Filled.Person,
-                    unselectedIcon = Icons.Outlined.Person,
-                    isSelected = selectedTab == "Perfil",
-                    onClick = { onTabSelected("Perfil") }
                 )
             }
         }

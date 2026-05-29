@@ -250,26 +250,25 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
                 
-                // Tenta o SuperflixAPI (muito rápido e limpo)
-                val primaryApiUrl = "https://superflixapi.top/filme/$targetId"
+                // Tenta o Vidsrc (rápido e limpo)
+                val primaryApiUrl = "https://vidsrc.me/embed/movie?tmdb=$targetId"
                 
-                // tenta pegar m3u8 direto se o superflix permitir extração
+                // tenta pegar m3u8 direto se permitir extração
                 val extractedStream = repository.scrapeM3u8Url(primaryApiUrl)
                 _scrapeState.value = ScrapeUiState.Success(extractedStream)
                 
             } catch (e: Exception) {
                 // Fallback automático para o Iframe no WebView
                 val targetId = movie.id.toString()
-                val isDummyVideo = movie.videoUrl.contains("tears-of-steel") || movie.videoUrl.contains("demo.unified")
                 
                 // Lista de APIs que funcionam via Iframe nativamente com TMDB
                 val fallbackApis = listOf(
-                    "https://superflixapi.top/filme/$targetId",
-                    "https://embed.warezcdn.link/filme/$targetId",
-                    "https://vidsrc.to/embed/movie/$targetId"
+                    "https://vidsrc.me/embed/movie?tmdb=$targetId",
+                    "https://vidsrc.to/embed/movie/$targetId",
+                    "https://embed.su/embed/movie/$targetId"
                 )
                 
-                // O WebView tocará o Iframe do SuperflixAPI automaticamente sem precisar que o usuario cole link
+                // O WebView tocará o Iframe do Vidsrc automaticamente sem precisar que o usuario cole link
                 _scrapeState.value = ScrapeUiState.Success(fallbackApis.first())
             }
         }
