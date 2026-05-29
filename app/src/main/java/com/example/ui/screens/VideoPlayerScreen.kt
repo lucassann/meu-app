@@ -223,6 +223,7 @@ fun VideoPlayerScreen(
                         settings.mediaPlaybackRequiresUserGesture = false
                         settings.setSupportMultipleWindows(false) // BLOCK POPUPS NATURALLY
                         settings.javaScriptCanOpenWindowsAutomatically = false
+                        settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                         
                         webViewClient = object : android.webkit.WebViewClient() {
                             val adBlockList = listOf("exoclick", "popads", "popunder", "adsystem", "doubleclick", "syndication", "onclick")
@@ -240,6 +241,7 @@ fun VideoPlayerScreen(
 
                             override fun onPageFinished(view: android.webkit.WebView?, url: String?) {
                                 super.onPageFinished(view, url)
+                                isBufferLoading = false // <--- CORREÇÃO: Oculta o carregamento assim que o player estiver na tela!
                                 // INJECT JS TO REMOVE INVISIBLE OVERLAYS AND ADS
                                 view?.evaluateJavascript(
                                     """

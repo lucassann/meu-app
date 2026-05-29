@@ -250,11 +250,11 @@ class MovieViewModel(private val repository: CineRepository) : ViewModel() {
                 // 100% AUTOMÁTICO: Usa APIs reais de TMDB em vez de tentar /embed/movie
                 val targetId = movie.id.toString()
                 
-                // Lista de APIs que funcionam via Iframe nativamente com TMDB
+                // Lista de APIs que funcionam via Iframe nativamente com TMDB (Focadas em PT-BR)
                 val fallbackApis = listOf(
-                    "https://vidsrc.to/embed/movie/$targetId",
-                    "https://vidsrcme.ru/embed/movie?tmdb=$targetId",
-                    "https://myembed.biz/filme/$targetId"
+                    "https://embed.warezcdn.link/filme/$targetId",
+                    "https://embed.su/embed/movie/$targetId",
+                    "https://multiembed.mov/direct?video_id=$targetId&tmdb=1"
                 )
                 
                 // Abre o player instantaneamente no Iframe
