@@ -75,11 +75,25 @@ fun VideoPlayerScreen(
     // Save current width to calculate region for splits
     var screenWidthPx by remember { mutableStateOf(1000) }
 
-    // Keep screen always illuminated during video playback
+    // Keep screen always illuminated during video playback and force landscape mode
     DisposableEffect(Unit) {
+        val originalOrientation = activity?.requestedOrientation ?: android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        activity?.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
+        // Esconder barras do sistema (Fullscreen Immersive)
+        val insetsController = activity?.window?.let { window ->
+            androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        }
+        insetsController?.let {
+            it.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            it.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        }
+
         onDispose {
+            activity?.requestedOrientation = originalOrientation
             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            insetsController?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
         }
     }
 
